@@ -65,23 +65,57 @@ const people = [
 
 // Array.prototype.filter()
 // 1. Filter the list of inventors for those who were born in the 1500's
+const bornFifteenCentury = inventors.filter(
+  (inventor) => inventor.year >= 1500 && inventor.year < 1600
+);
+console.table(bornFifteenCentury);
 
 // Array.prototype.map()
 // 2. Give us an array of the inventors first and last names
+const fullNames = inventors.map(
+  (inventor) => `${inventor.first} ${inventor.last}`
+);
+console.log(fullNames);
 
 // Array.prototype.sort()
 // 3. Sort the inventors by birthdate, oldest to youngest
+const ordered = inventors.sort((a, b) => a.year - b.year);
+console.table(ordered);
 
 // Array.prototype.reduce()
 // 4. How many years did all the inventors live all together?
+const totalYears = inventors.reduce(
+  (total, inventor) => total + (inventor.passed - inventor.year),
+  0 // Initial value for the count.
+);
+console.log(totalYears);
 
 // 5. Sort the inventors by years lived
+const yearsLived = inventors.sort((a, b) => {
+  const prevGuy = a.passed - a.year;
+  const nextGuy = b.passed - b.year;
+  return nextGuy - prevGuy;
+});
+console.table(yearsLived);
 
 // 6. create a list of Boulevards in Paris that contain 'de' anywhere in the name
 // https://en.wikipedia.org/wiki/Category:Boulevards_in_Paris
 
+// Execute the following in the console of the webpage.
+// const category = document.querySelector(".mw-category");
+// const links = Array.from(category.querySelectorAll("a"));
+// const boulevardsWithDe = links
+//   .map((link) => link.textContent)
+//   .filter((boulevard) => boulevard.includes("de"));
+
 // 7. sort Exercise
 // Sort the people alphabetically by last name
+const sortByLastName = people.sort((a, b) => {
+  const [aLast, aFirst] = a.split(", ");
+  const [bLast, bFirst] = b.split(", ");
+  return aLast > bLast ? 1 : -1;
+});
+console.log(sortByLastName);
 
 // 8. Reduce Exercise
 // Sum up the instances of each of these
@@ -101,3 +135,14 @@ const data = [
   "car",
   "truck",
 ];
+
+const sumInstances = data.reduce((obj, item) => {
+  // Add a new item to the object if it doesn't exist.
+  if (!obj[item]) {
+    obj[item] = 0;
+  }
+  // Sum one to the item in the object.
+  obj[item]++;
+  // Return the object with the current sums.
+  return obj;
+}, {}); // We can pass an object as the initial value.

@@ -146,3 +146,4 @@ const sumInstances = data.reduce((obj, item) => {
   // Return the object with the current sums.
   return obj;
 }, {}); // We can pass an object as the initial value.
+console.log(sumInstances);

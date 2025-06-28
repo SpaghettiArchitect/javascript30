@@ -45,6 +45,7 @@ body {
 }
 
 .player__button {
+  font-size: 1rem;
   background: none;
   border: 0;
   line-height: 1;

@@ -3,6 +3,7 @@
 const addItems = document.querySelector(".add-items");
 const itemsList = document.querySelector(".plates");
 const items = JSON.parse(localStorage.getItem("items")) || [];
+const deleteBtn = document.querySelector(".delete");
 
 // Add a new item to the items array.
 function addItem(e) {
@@ -56,12 +57,28 @@ function toggleDone(e) {
   populateList(items, itemsList);
 }
 
+// Deletes all elements from the list and localStorage.
+function deleteItems(e) {
+  // Confirm that the user REALLY wants to delete the list.
+  const confirmDeletion = window.confirm(
+    "Are you sure? This will delete ALL the elements on the list."
+  );
+  if (!confirmDeletion) return;
+
+  // Deletes the list and the saved state.
+  items.length = 0;
+  localStorage.removeItem("items");
+  populateList(items, itemsList);
+}
+
 // EVENT LISTENERS.
 addItems.addEventListener("submit", addItem);
 
 // We listen for the event on the parent element of the list items
 // (this is called event delegation).
 itemsList.addEventListener("click", toggleDone);
+
+deleteBtn.addEventListener("click", deleteItems);
 
 // Fill the HTML list with the values stored in localStorage
 // (if there are any).

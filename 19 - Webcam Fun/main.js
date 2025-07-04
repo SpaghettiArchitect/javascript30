@@ -37,7 +37,8 @@ function paintToCanvas() {
     let pixels = ctx.getImageData(0, 0, width, height);
 
     // Apply some filter to the pixels.
-    pixels = splitColors(pixels);
+    pixels = greenScreen(pixels);
+    // ctx.globalAlpha = 0.5;
 
     // Put the pixels back into the canvas.
     ctx.putImageData(pixels, 0, 0);
@@ -89,6 +90,35 @@ function splitColors(pixels) {
     pixels.data[i + greenOffset * 4] = pixels.data[i + 1]; // Green.
     pixels.data[i + blueOffset * 4] = pixels.data[i + 2]; // Blue.
   }
+  return pixels;
+}
+
+function greenScreen(pixels) {
+  const levels = {};
+
+  document.querySelectorAll(".rgb input").forEach((input) => {
+    levels[input.name] = input.value;
+  });
+
+  for (let i = 0; i < pixels.data.length; i = i + 4) {
+    const red = pixels.data[i + 0];
+    const green = pixels.data[i + 1];
+    const blue = pixels.data[i + 2];
+    const alpha = pixels.data[i + 3];
+
+    if (
+      red >= levels.rmin &&
+      green >= levels.gmin &&
+      blue >= levels.bmin &&
+      red <= levels.rmax &&
+      green <= levels.gmax &&
+      blue <= levels.bmax
+    ) {
+      // take it out!
+      pixels.data[i + 3] = 0;
+    }
+  }
+
   return pixels;
 }
 

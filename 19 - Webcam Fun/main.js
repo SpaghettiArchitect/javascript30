@@ -35,8 +35,34 @@ function paintToCanvas() {
   }, 16);
 }
 
+// Take a photo of the current canvas and add it to the strip.
+function takePhoto() {
+  // Play the sound.
+  snapSound.currentTime = 0;
+  snapSound.play();
+
+  // Take the data out of the canvas. This encodes the image as Base64.
+  const dataURL = canvas.toDataURL("image/png");
+
+  // Create the link for downloading the image.
+  const link = document.createElement("a");
+  link.href = dataURL;
+  link.download = "handsome";
+
+  // Create the image inside the link.
+  const img = document.createElement("img");
+  img.src = dataURL;
+  img.alt = "A handsome human being.";
+  link.insertAdjacentElement("afterbegin", img);
+
+  // Add the link (and image) inside the photosStrip div.
+  // We can also use insertBefore or insertAdjacentElement.
+  photosStrip.prepend(link);
+}
+
 getVideoStream();
 
 // Runs the painToCanvas function when the video can now be played
 // (e.g. getVideoStream has been called).
 video.addEventListener("canplay", paintToCanvas);
+takePhotoButton.addEventListener("click", takePhoto);

@@ -9,8 +9,18 @@ html {
 }
 
 html {
-  font-size: 10px;
+  font-size: 1rem;
+  font-family: sans-serif;
   background: #ffc600;
+}
+
+fieldset {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.hide {
+  display: none;
 }
 
 .photobooth {
@@ -33,10 +43,9 @@ html {
 }
 
 .player {
+  transform: scaleX(-1);
   position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 200px;
+  width: 20vw;
 }
 
 /*

@@ -6,6 +6,9 @@ const ctx = canvas.getContext("2d");
 const photosStrip = document.querySelector(".strip");
 const takePhotoButton = document.querySelector(".btn__photo");
 const snapSound = document.querySelector(".snap");
+const filterSelection = document.querySelector("#filter");
+
+let currentFilter = "";
 
 // Show the webcam stream into the page.
 function getVideoStream() {
@@ -19,6 +22,14 @@ function getVideoStream() {
     })
     // This happens if the user denies access to its webcam.
     .catch((error) => console.error("An error occurred :", error));
+
+  setVideoPosition();
+}
+
+// Set the position of the video element to the top-left of the canvas.
+function setVideoPosition() {
+  video.style.top = `${canvas.offsetTop}px`;
+  video.style.left = `${canvas.offsetLeft}px`;
 }
 
 // Draw a video frame to the canvas every 16ms.
@@ -31,13 +42,16 @@ function paintToCanvas() {
   // Return the unique ID of the interval, so it can be stopped by
   // passing it to clearInterval().
   return setInterval(() => {
-    ctx.drawImage(video, 0, 0, width, height);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0, width * -1, height);
 
     // Take the pixels out.
     let pixels = ctx.getImageData(0, 0, width, height);
 
     // Apply some filter to the pixels.
-    pixels = greenScreen(pixels);
+    pixels = applyCurrentFilter(pixels);
+
+    // pixels = greenScreen(pixels);
     // ctx.globalAlpha = 0.5;
 
     // Put the pixels back into the canvas.
@@ -51,26 +65,57 @@ function takePhoto() {
   snapSound.currentTime = 0;
   snapSound.play();
 
-  // Take the data out of the canvas. This encodes the image as Base64.
-  const dataURL = canvas.toDataURL("image/png");
+  canvas.toBlob((blob) => {
+    // Take the data out of the canvas. This encodes the image as Base64.
+    const url = URL.createObjectURL(blob);
 
-  // Create the link for downloading the image.
-  const link = document.createElement("a");
-  link.href = dataURL;
-  link.download = "handsome";
+    // Create the link for downloading the image.
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "handsome";
 
-  // Create the image inside the link.
-  const img = document.createElement("img");
-  img.src = dataURL;
-  img.alt = "A handsome human being.";
-  link.insertAdjacentElement("afterbegin", img);
+    // Create the image inside the link.
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = "A handsome human being.";
+    link.insertAdjacentElement("afterbegin", img);
 
-  // Add the link (and image) inside the photosStrip div.
-  // We can also use insertBefore or insertAdjacentElement.
-  photosStrip.prepend(link);
+    // Add the link (and image) inside the photosStrip div.
+    // We can also use insertBefore or insertAdjacentElement.
+    photosStrip.prepend(link);
+  });
 }
 
 // VIDEO EFFECTS
+function applyCurrentFilter(pixels) {
+  switch (currentFilter) {
+    case "green-screen":
+      return greenScreen(pixels);
+    case "red-filter":
+      return applyRedFilter(pixels);
+    case "glitch-filter":
+      return splitColors(pixels);
+    default:
+      // Don't apply any filter.
+      return pixels;
+  }
+}
+
+// Changes the current filter applied to the canvas.
+function changeFilter(e) {
+  currentFilter = this.value;
+
+  // Hides the green screen controls if this option isn't selected.
+  if (currentFilter === "green-screen") {
+    document.querySelector("fieldset").classList.remove("hide");
+  } else {
+    document.querySelector("fieldset").classList.add("hide");
+  }
+
+  // Update the position of the video element.
+  setVideoPosition();
+}
+
 function applyRedFilter(pixels) {
   for (let i = 0; i < pixels.data.length; i += 4) {
     // We don't modify the red value.
@@ -122,9 +167,11 @@ function greenScreen(pixels) {
   return pixels;
 }
 
+// Show the video stream on the page.
 getVideoStream();
 
 // Runs the painToCanvas function when the video can now be played
 // (e.g. getVideoStream has been called).
 video.addEventListener("canplay", paintToCanvas);
 takePhotoButton.addEventListener("click", takePhoto);
+filterSelection.addEventListener("change", changeFilter);

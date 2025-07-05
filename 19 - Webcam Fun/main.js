@@ -96,10 +96,18 @@ function getFilter(filterName) {
       return greenScreen;
     case "red-filter":
       return applyRedFilter;
+    case "green-filter":
+      return applyGreenFilter;
+    case "blue-filter":
+      return applyBlueFilter;
     case "glitch-filter":
       return splitColors;
     case "grayscale-filter":
       return applyGrayscale;
+    case "sepia-filter":
+      return applySepiaFilter;
+    case "invert-filter":
+      return invertColors;
     default:
       // Don't apply any filter.
       return noFilter;
@@ -130,8 +138,26 @@ function noFilter(pixels) {
 function applyRedFilter(pixels) {
   for (let i = 0; i < pixels.data.length; i += 4) {
     // We don't modify the red value.
-    pixels.data[i + 1] = pixels.data[i + 1] * 0.25; // Green.
-    pixels.data[i + 2] = pixels.data[i + 2] * 0.25; // Blue.
+    pixels.data[i + 1] = 0; // Green.
+    pixels.data[i + 2] = 0; // Blue.
+  }
+}
+
+// Make the canvas image appear more green.
+function applyGreenFilter(pixels) {
+  for (let i = 0; i < pixels.data.length; i += 4) {
+    pixels.data[i] = 0; // Red.
+    // We don't modify the green value.
+    pixels.data[i + 2] = 0; // Blue.
+  }
+}
+
+// Make the canvas image appear more blue.
+function applyBlueFilter(pixels) {
+  for (let i = 0; i < pixels.data.length; i += 4) {
+    pixels.data[i] = 0; // Red.
+    pixels.data[i + 1] = 0; // Green.
+    // We don't modify the blue value.
   }
 }
 
@@ -179,10 +205,42 @@ function greenScreen(pixels) {
 // Add a greyscale filter to the canvas image.
 function applyGrayscale(pixels) {
   for (let i = 0; i < pixels.data.length; i += 4) {
-    const avg = (pixels.data[i] + pixels.data[i + 1] + pixels.data[i + 2]) / 3;
-    pixels.data[i] = avg; // Red.
-    pixels.data[i + 1] = avg; // Green.
-    pixels.data[i + 2] = avg; // Blue.
+    const pixelSum = pixels.data[i] + pixels.data[i + 1] + pixels.data[i + 2];
+    const pixelAvg = pixelSum / 3;
+    pixels.data[i] = pixelAvg; // Red.
+    pixels.data[i + 1] = pixelAvg; // Green.
+    pixels.data[i + 2] = pixelAvg; // Blue.
+  }
+}
+
+// Apply a sepia filter to the canvas image.
+function applySepiaFilter(pixels) {
+  for (let i = 0; i < pixels.data.length; i += 4) {
+    let red = pixels.data[i];
+    let green = pixels.data[i + 1];
+    let blue = pixels.data[i + 2];
+
+    pixels.data[i] = Math.min(
+      Math.round(0.393 * red + 0.769 * green + 0.189 * blue),
+      255
+    ); // Red.
+    pixels.data[i + 1] = Math.min(
+      Math.round(0.349 * red + 0.686 * green + 0.168 * blue),
+      255
+    ); // Green.
+    pixels.data[i + 2] = Math.min(
+      Math.round(0.272 * red + 0.534 * green + 0.131 * blue),
+      255
+    ); // Blue.
+  }
+}
+
+// Invert the colors of the canvas image.
+function invertColors(pixels) {
+  for (let i = 0; i < pixels.data.length; i += 4) {
+    pixels.data[i] = 255 - pixels.data[i]; // Red.
+    pixels.data[i + 1] = 255 - pixels.data[i + 1]; // Green.
+    pixels.data[i + 2] = 255 - pixels.data[i + 2]; // Blue.
   }
 }
 

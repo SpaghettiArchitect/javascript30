@@ -95,6 +95,8 @@ function applyCurrentFilter(pixels) {
       return applyRedFilter(pixels);
     case "glitch-filter":
       return splitColors(pixels);
+    case "grayscale-filter":
+      return applyGrayscale(pixels);
     default:
       // Don't apply any filter.
       return pixels;
@@ -149,7 +151,6 @@ function greenScreen(pixels) {
     const red = pixels.data[i + 0];
     const green = pixels.data[i + 1];
     const blue = pixels.data[i + 2];
-    const alpha = pixels.data[i + 3];
 
     if (
       red >= levels.rmin &&
@@ -164,6 +165,16 @@ function greenScreen(pixels) {
     }
   }
 
+  return pixels;
+}
+
+function applyGrayscale(pixels) {
+  for (let i = 0; i < pixels.data.length; i += 4) {
+    const avg = (pixels.data[i] + pixels.data[i + 1] + pixels.data[i + 2]) / 3;
+    pixels.data[i] = avg; // Red.
+    pixels.data[i + 1] = avg; // Green.
+    pixels.data[i + 2] = avg; // Blue.
+  }
   return pixels;
 }
 

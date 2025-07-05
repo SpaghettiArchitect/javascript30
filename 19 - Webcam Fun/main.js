@@ -8,7 +8,7 @@ const takePhotoButton = document.querySelector(".btn__photo");
 const snapSound = document.querySelector(".snap");
 const filterSelection = document.querySelector("#filter");
 
-let currentFilter = "";
+let currentFilter = noFilter;
 
 // Show the webcam stream into the page.
 function getVideoStream() {
@@ -42,20 +42,21 @@ function paintToCanvas() {
   // Return the unique ID of the interval, so it can be stopped by
   // passing it to clearInterval().
   return setInterval(() => {
-    ctx.scale(-1, 1);
-    ctx.drawImage(video, 0, 0, width * -1, height);
+    ctx.drawImage(video, 0, 0, width, height);
 
     // Take the pixels out.
     let pixels = ctx.getImageData(0, 0, width, height);
 
     // Apply some filter to the pixels.
-    pixels = applyCurrentFilter(pixels);
+    currentFilter(pixels);
 
-    // pixels = greenScreen(pixels);
     // ctx.globalAlpha = 0.5;
 
     // Put the pixels back into the canvas.
     ctx.putImageData(pixels, 0, 0);
+
+    // Flip the canvas image horizontally.
+    canvas.style.transform = "scaleX(-1)";
   }, 16);
 }
 
@@ -87,28 +88,30 @@ function takePhoto() {
 }
 
 // VIDEO EFFECTS
-function applyCurrentFilter(pixels) {
-  switch (currentFilter) {
+
+// Get the filter function for the filterName.
+function getFilter(filterName) {
+  switch (filterName) {
     case "green-screen":
-      return greenScreen(pixels);
+      return greenScreen;
     case "red-filter":
-      return applyRedFilter(pixels);
+      return applyRedFilter;
     case "glitch-filter":
-      return splitColors(pixels);
+      return splitColors;
     case "grayscale-filter":
-      return applyGrayscale(pixels);
+      return applyGrayscale;
     default:
       // Don't apply any filter.
-      return pixels;
+      return noFilter;
   }
 }
 
 // Changes the current filter applied to the canvas.
 function changeFilter(e) {
-  currentFilter = this.value;
+  currentFilter = getFilter(this.value);
 
   // Hides the green screen controls if this option isn't selected.
-  if (currentFilter === "green-screen") {
+  if (this.value === "green-screen") {
     document.querySelector("fieldset").classList.remove("hide");
   } else {
     document.querySelector("fieldset").classList.add("hide");
@@ -118,15 +121,21 @@ function changeFilter(e) {
   setVideoPosition();
 }
 
+// Doesn't change the pixels.
+function noFilter(pixels) {
+  return pixels;
+}
+
+// Make the canvas image appear more red.
 function applyRedFilter(pixels) {
   for (let i = 0; i < pixels.data.length; i += 4) {
     // We don't modify the red value.
     pixels.data[i + 1] = pixels.data[i + 1] * 0.25; // Green.
     pixels.data[i + 2] = pixels.data[i + 2] * 0.25; // Blue.
   }
-  return pixels;
 }
 
+// Applies a glitch filter to the canvas image.
 function splitColors(pixels) {
   const redOffset = 20;
   const greenOffset = -10;
@@ -137,9 +146,10 @@ function splitColors(pixels) {
     pixels.data[i + greenOffset * 4] = pixels.data[i + 1]; // Green.
     pixels.data[i + blueOffset * 4] = pixels.data[i + 2]; // Blue.
   }
-  return pixels;
 }
 
+// Allow the user to remove the background of the canvas image
+// if is a green screen.
 function greenScreen(pixels) {
   const levels = {};
 
@@ -164,10 +174,9 @@ function greenScreen(pixels) {
       pixels.data[i + 3] = 0;
     }
   }
-
-  return pixels;
 }
 
+// Add a greyscale filter to the canvas image.
 function applyGrayscale(pixels) {
   for (let i = 0; i < pixels.data.length; i += 4) {
     const avg = (pixels.data[i] + pixels.data[i + 1] + pixels.data[i + 2]) / 3;
@@ -175,7 +184,6 @@ function applyGrayscale(pixels) {
     pixels.data[i + 1] = avg; // Green.
     pixels.data[i + 2] = avg; // Blue.
   }
-  return pixels;
 }
 
 // Show the video stream on the page.
@@ -184,5 +192,6 @@ getVideoStream();
 // Runs the painToCanvas function when the video can now be played
 // (e.g. getVideoStream has been called).
 video.addEventListener("canplay", paintToCanvas);
+
 takePhotoButton.addEventListener("click", takePhoto);
 filterSelection.addEventListener("change", changeFilter);

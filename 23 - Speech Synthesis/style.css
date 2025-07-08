@@ -140,6 +140,7 @@ h1 {
 
 textarea {
   height: 20rem;
+  resize: vertical;
 }
 
 .voiceinator button {

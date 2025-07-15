@@ -14,6 +14,10 @@ body {
   padding: 0;
   margin: 0;
   font-family: "Amatic SC", cursive;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 h1 {
@@ -68,4 +72,10 @@ h1 {
 
 .hole.up .mole {
   top: 0;
+}
+
+button {
+  font-size: medium;
+  padding: 1.2rem;
+  margin-top: 2rem;
 }
